@@ -61,16 +61,16 @@ pipeline {
         }
     }
     
-    // stage('remove helm charts') {
-    //     steps {
-    //         sh '''
-    //           helm uninstall mongodb-exporter && \
-    //           helm uninstall nginx-exporter && \
-    //           helm uninstall kube-prom-stack -n monitoring && \
-    //           helm uninstall loki -n loki-stack
-    //         '''
-    //     }
-    // }
+    stage('remove helm charts') {
+        steps {
+            sh '''
+              helm uninstall mongodb-exporter && \
+              helm uninstall nginx-exporter && \
+              helm uninstall kube-prom-stack -n monitoring && \
+              helm uninstall loki -n loki-stack
+            '''
+        }
+    }
     
     stage('ansible playbook') {
         steps {
