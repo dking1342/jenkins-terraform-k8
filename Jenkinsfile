@@ -31,91 +31,48 @@ pipeline {
       }
     }
 
-    // stage('Terraform Apply') {
-    //   steps {
-    //     sh '''
-    //       cd terraform 
-    //       terraform apply -auto-approve -var "do_token=${DO_PAT}" -var "pvt_key=~/.ssh/do_key_01" -var "pub_key=~/.ssh/do_key_01.pub"
-    //     '''
-    //   }
-    // }
+    stage('Terraform Apply') {
+      steps {
+        sh '''
+          cd terraform 
+          terraform apply --auto-approve -var "do_token=${DO_PAT}" -var "pvt_key=~/.ssh/do_key_01" -var "pub_key=~/.ssh/do_key_01.pub"
+        '''
+      }
+    }
     
-    // stage('File Removal') {
-    //     steps {
-    //         sh '''
-    //           if test -f "./ansible/hosts.ini"; then
-    //             rm ./ansible/hosts.ini
-    //           fi
-    //           if test -f "./ansible/ws.json"; then
-    //             rm ./ansible/ws.json
-    //           fi
-    //           if test -f "./ansible/outputs.json"; then
-    //             rm ./ansible/outputs.json
-    //           fi
-    //         '''
-    //     }
-    // }
+    stage('doctl init') {
+        steps {
+            sh '''
+              cd terraform 
+              if test -f "clusterid.txt"; then 
+                rm clusterid.txt
+              fi 
+              terraform output | grep -Eo '\w{1,}-\w{1,}-\w{1,}-\w{1,}-\w{1,}' > clusterid.txt 
+              sed -i '1,2d' clusterid.txt 
+              export CLUSTER_ID=$(cat clusterid.txt) 
+              doctl kubernetes cluster kubeconfig save $CLUSTER_ID 
+              rm clusterid.txt
+            '''
+        }
+    }
     
-    // stage('TF Token') {
-    //     steps {
-    //         sh '''
-    //           curl --header "Authorization: Bearer ${TF_TOKEN}" --header "Content-Type: application/vnd.api+json" "https://app.terraform.io/api/v2/organizations/kavooce1/workspaces/" > ./ansible/ws.json
-    //         '''
-    //     }
-    // }
+    stage('remove helm charts') {
+        steps {
+            sh '''
+              helm uninstall mongodb-exporter && \
+              helm uninstall nginx-exporter && \
+              helm uninstall kube-prom-stack -n monitoring && \
+              helm uninstall loki -n loki-stack
+            '''
+        }
+    }
     
-    // stage('Cloud Output') {
-    //     steps {
-    //         script {
-    //             project=""
-    //         }
-    //         sh '''
-    //             project=$(cat ./ansible/ws.json | jq '.data[0].id' | sed 's/\"//g')
-    //             curl --header "Authorization: Bearer ${TF_TOKEN}" --header "Content-Type: application/vnd.api+json" "https://app.terraform.io/api/v2/workspaces/${project}/current-state-version?include=outputs" > ./ansible/outputs.json
-    //         '''
-    //     }
-    // }
-
-    // stage('Host File') {
-    //     steps {
-    //         sh '''
-    //             touch ./ansible/hosts.ini
-    //             chmod 777 ./ansible/hosts.ini
-    //             echo "[droplets]" > ./ansible/hosts.ini
-    //         '''
-    //     }
-    // }
-
-    // stage('Host Inventory') {
-    //     steps {
-    //         script {
-    //             project=""
-    //         }
-    //         sh '''
-    //             project=$(cat ./ansible/ws.json | jq '.data[0].id' | sed 's/\"//g')
-    //             curl --header "Authorization: Bearer ${TF_TOKEN}" --header "Content-Type: application/vnd.api+json" "https://app.terraform.io/api/v2/workspaces/${project}/current-state-version?include=outputs" | grep -Eo "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}" >> ./ansible/hosts.ini
-    //         '''
-    //     }
-    // }
-
-    // stage('Host IPs') {
-    //   steps {
-    //     sh 'cat ./ansible/hosts.ini'
-    //   }
-    // }
-    
-    // stage('Sleep') {
-    //   steps {
-    //     sh '''
-    //       sleep 10
-    //     '''
-    //   }
-    // }
-
-    // stage('Application Playbook') {
-    //   steps {
-    //     sh 'ansible-playbook -i ./ansible/hosts.ini -e "pub_key=~/.ssh/do_key_01.pub" ./ansible/apache-install.yaml'
-    //   }
-    // }
+    stage('ansible playbook') {
+        steps {
+            sh '''
+              ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i k8s.yaml ./ansible/cluster-install.yaml
+            '''
+        }
+    }
   }
 }
