@@ -1,0 +1,67 @@
+- name: Cluster setup
+  hosts: localhost
+  connection: local
+
+  collections:
+    - kubernetes.core.k8s
+
+  tasks:
+    - name: Create a service of loadbalancer
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: ../manifests/loadbalancer.yaml
+
+    - name: Create a deployment of nginx
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: ../manifests/nginx.yaml
+
+    - name: Create a deployment of myapp
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: ../manifests/app.yaml
+
+    - name: Create a deployment of mongodb
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: ../manifests/mongodb.yaml
+
+    - name: Install Prometheus via Helm
+      ansible.builtin.shell:
+        cmd: |
+          export HELM_CHART_VERSION=35.5.1
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm install kube-prom-stack prometheus-community/kube-prometheus-stack --version "${HELM_CHART_VERSION}" \
+            --namespace monitoring \
+            --create-namespace \
+            -f ../helm/prom-stack-values-v${HELM_CHART_VERSION}.yaml
+      register: prom
+      changed_when: false
+
+    - name: Install Nginx exporter via Helm
+      ansible.builtin.shell: helm install nginx-exporter prometheus-community/prometheus-nginx-exporter -f ../helm/nginx-values.yaml
+      register: nginxexporter
+      changed_when: nginxexporter.rc != 0
+
+    - name: Install Mongo exporter via Helm
+      ansible.builtin.shell: helm install mongodb-exporter prometheus-community/prometheus-mongodb-exporter -f ../helm/mongo-values.yaml
+      register: mongoexporter
+      changed_when: mongoexporter.rc != 0
+
+    - name: Install Loki via Helm
+      ansible.builtin.shell:
+        cmd: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update grafana
+          export HELM_CHART_VERSION="2.6.4"
+          helm install loki grafana/loki-stack --version "${HELM_CHART_VERSION}" \
+            --namespace=loki-stack \
+            --create-namespace \
+            -f "../helm/loki-stack-values-v${HELM_CHART_VERSION}.yaml"
+      register: loki
+      changed_when: loki.rc != 0

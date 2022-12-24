@@ -1,0 +1,9 @@
+mongodb:
+  uri: "mongodb://mongodb:27017"
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: prom
+    # release: prometheus
+    # release: kube-prometheus-stack
