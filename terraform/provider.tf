@@ -7,11 +7,12 @@ terraform {
   }
   cloud {
     organization = "kavooce1"
+    token        = "$TF_TOKEN"
 
     workspaces {
       name = "jenkins-pipeline-02"
     }
-    token = "$TF_TOKEN"
+
   }
 }
 
