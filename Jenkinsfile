@@ -5,7 +5,6 @@ pipeline {
       steps {
         sh '''
           cd terraform
-          rm -fr .terraform && .terraform.lock.hcl 
           terraform init
         '''
       }
