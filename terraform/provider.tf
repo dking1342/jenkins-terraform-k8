@@ -6,7 +6,7 @@ terraform {
     }
   }
   cloud {
-    organization = "kavooce1"
+    organization = "kavooce"
     token        = "$TF_TOKEN"
 
     workspaces {
