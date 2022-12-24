@@ -11,6 +11,7 @@ terraform {
     workspaces {
       name = "jenkins-pipeline-02"
     }
+    token = "$TF_TOKEN"
   }
 }
 
