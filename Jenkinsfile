@@ -1,22 +1,6 @@
 pipeline {
   agent any
   stages {
-    // stage('Tests') {
-    //   steps {
-    //     sh '''
-    //       doctl version
-    //       helm version
-    //       python3 --version
-    //       pip --version
-    //       ansible --version
-    //       ansible-galaxy --version
-    //       terraform --version
-    //       ls -la
-    //     '''
-    //   }
-    // }
-
-
 
     stage('Terraform Format') {
       steps {
@@ -24,7 +8,7 @@ pipeline {
       }
     }
 
-    stage('Terraform Inits') {
+    stage('Terraform Init') {
       steps {
         sh 'cd terraform && terraform init'
       }
@@ -32,7 +16,7 @@ pipeline {
 
     stage('Terraform Validate') {
       steps {
-        sh 'terraform validate -no-color'
+        sh 'cd terraform && terraform validate -no-color'
       }
     }
 

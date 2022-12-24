@@ -6,7 +6,7 @@ terraform {
     }
   }
   cloud {
-    organization = "kavooce"
+    organization = "kavooce1"
 
     workspaces {
       name = "jenkins-pipeline-02"
