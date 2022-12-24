@@ -6,8 +6,8 @@ terraform {
     }
   }
   cloud {
-    organization = "kavooce"
-    token        = "$TF_TOKEN"
+    organization = "kavooce1"
+    # token        = "$TF_TOKEN"
 
     workspaces {
       name = "jenkins-pipeline-02"
