@@ -54,6 +54,7 @@ pipeline {
               clusterid=$(cat clusterid.txt) 
               doctl version
               doctl auth init -t ${DO_PAT}
+              doctl account get
               doctl kubernetes cluster kubeconfig save ${clusterid} 
               rm clusterid.txt
             '''
