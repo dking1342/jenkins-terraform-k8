@@ -6,7 +6,7 @@ pipeline {
         sh '''
           cd terraform
           rm -fr .terraform && .terraform.lock.hcl 
-          terraform init --reconfigure
+          terraform init
         '''
       }
     }
