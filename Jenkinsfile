@@ -1,12 +1,6 @@
 pipeline {
   agent any
   stages {
-    stage('token') {
-      steps {
-        sh 'echo $TF_TOKEN'
-      }
-    }
-
     stage('Terraform Init') {
       steps {
         sh '''
