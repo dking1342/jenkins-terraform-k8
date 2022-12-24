@@ -42,15 +42,19 @@ pipeline {
     
     stage('doctl init') {
         steps {
+            script {
+              clusterid=""
+            }
             sh '''
               cd terraform 
               if test -f "clusterid.txt"; then 
                 rm clusterid.txt
               fi 
               terraform output | grep -Eo '\\w{1,}-\\w{1,}-\\w{1,}-\\w{1,}-\\w{1,}' > clusterid.txt 
-              sed -i '1,2d' clusterid.txt 
-              export CLUSTER_ID=$(cat clusterid.txt) 
-              doctl kubernetes cluster kubeconfig save $CLUSTER_ID 
+              clusterid=$(cat clusterid.txt) 
+              doctl version
+              doctl auth init -t ${DO_PAT}
+              doctl kubernetes cluster kubeconfig save ${clusterid} 
               rm clusterid.txt
             '''
         }
