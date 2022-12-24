@@ -7,15 +7,15 @@ pipeline {
       }
     }
 
-    stage('Terraform Format') {
-      steps {
-        sh 'cd terraform && rm -fr .terraform && .terraform.lock.hcl && terraform fmt -check'
-      }
-    }
-
     stage('Terraform Init') {
       steps {
         sh 'cd terraform && terraform init'
+      }
+    }
+
+    stage('Terraform Format') {
+      steps {
+        sh 'cd terraform && rm -fr .terraform && .terraform.lock.hcl && terraform fmt -check'
       }
     }
 
