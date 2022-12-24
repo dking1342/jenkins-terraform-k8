@@ -47,7 +47,7 @@ pipeline {
               if test -f "clusterid.txt"; then 
                 rm clusterid.txt
               fi 
-              terraform output | grep -Eo '\w{1,}-\w{1,}-\w{1,}-\w{1,}-\w{1,}' > clusterid.txt 
+              terraform output | grep -Eo '\\w{1,}-\\w{1,}-\\w{1,}-\\w{1,}-\\w{1,}' > clusterid.txt 
               sed -i '1,2d' clusterid.txt 
               export CLUSTER_ID=$(cat clusterid.txt) 
               doctl kubernetes cluster kubeconfig save $CLUSTER_ID 
